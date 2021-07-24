@@ -7,71 +7,9 @@
 
 #include "types.h"
 #include "egraph.h"
-
-struct Var
-{
-
-};
-
-template<class L, class N>
-class Searcher
-{
-public:
-    virtual std::vector<SearchMatches> search(EGraph<L, N> &egraph)
-    {
-        auto graph_classes = egraph.classes();
-        std::vector<SearchMatches> result;
-        for(auto &&[id, v] : graph_classes)
-        {
-            if(auto &&[ok, matches] = search_eclass(egraph, id); ok)
-            {
-                result.push_back(matches);
-            }
-        }
-        return result;
-    }
-
-    virtual std::pair<bool, SearchMatches> search_eclass(EGraph<L, N> &egraph, Id eclass) = 0;
-
-    virtual std::vector<Var> vars() = 0;
-};
-
-// Arc<dyn Searcher<L, N> + Sync + Send>
-template<class L, class N>
-class Arc // as a searcher
-{
-public:
-    std::vector<SearchMatches> search(EGraph<L, N> &egraph)
-    {
-        // filter_map
-        auto graph_classes = egraph.classes();
-
-        // TODO:translate by filter and map
-        std::vector<SearchMatches> result;
-        for(auto &&[id, v] : graph_classes)
-        {
-            if(auto &&[ok, matches] = search_eclass(egraph, id); ok)
-            {
-                result.push_back(matches);
-            }
-        }
-        return result;
-        // return searcher.search(egraph);
-    }
-
-    // Searcher<L, N> searcher;
-    // TODO:return optional
-    std::pair<bool, SearchMatches>search_eclass(EGraph<L, N> &egraph, Id id)
-    {
-
-    }
-};
-
-template<class L>
-struct RecExpr
-{
-    std::vector<L> nodes;
-};
+#include "machine.h"
+#include "language.h"
+#include "rewrite.h"
 
 template<class L>
 struct ENodeOrVar
@@ -84,21 +22,6 @@ struct ENodeOrVar
 
 template<class L>
 using PatternAst = RecExpr<ENodeOrVar<L>>;
-
-template<class L>
-struct Analysis
-{
-
-};
-
-template<class L>
-struct Program
-{
-    std::vector<SubSet> run(EGraph<L, Analysis<L>> &egraph, Id eclass)
-    {
-
-    }
-};
 
 
 // TODO:不适合继承

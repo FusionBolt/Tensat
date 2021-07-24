@@ -50,7 +50,7 @@ struct Iterator
 };
 
 // TODO:IterData default is ()
-template<class L, class N, class IterData = void>
+template<class L, class N = Analysis<L>, class IterData = void>
 class Runner
 {
 public:
@@ -144,7 +144,7 @@ public:
 // TODO:抽象出一个run_with_check_limit
 int main()
 {
-    Runner<int, int> runner;
+    Runner<int, Analysis<int>> runner;
     runner.run();
-    Extractor<int, int, int> extractor({}, {});
+    Extractor<int, Analysis<int>, int> extractor({}, {});
 }
