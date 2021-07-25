@@ -7,6 +7,12 @@
 
 struct Language
 {
+    virtual bool matches(Language &other) = 0;
+
+    /// Runs a given function on each child `Id`.
+    // TODO:const version
+    virtual void for_each(std::function<void(Id)> f) = 0;
+
     /// Runs a given function to replace the children.
     template<class Callable>
     void update_children(Callable&& f)
@@ -19,6 +25,14 @@ struct Language
     Language& map_children(Callable&& f)
     {
         update_children(std::forward<Callable&&>(f));
+    }
+
+    bool all(std::function<bool(Id)> f)
+    {
+        // TODO:should test correctness
+        auto acc = true;
+        for_each([&](Id id){ acc = acc && f(id);});
+        return acc;
     }
 };
 

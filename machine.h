@@ -7,6 +7,7 @@
 
 #include "types.h"
 #include "language.h"
+#include "index_map.h"
 
 struct Machine
 {
@@ -27,11 +28,11 @@ struct Machine
                 {
                     // let instructions = instructions.as_slice
                     // [1, 2, 3] -> [2, 3] -> [2, 3] -> []
-                    // TODO:maybe error
+                    // TODO:maybe error 原本是迭代器，现在改成count，由于是递归，肯定会出问题
                     decltype(instructions) remaining_instructions(instructions.begin(), instructions.end() - count);
                     // TODO:maybe error
-                    // reg_ [0:out.0 + 1]
-                    reg_.resize(std::min(bind.out, reg_.size()));
+                    // reg_ [0:out_.0 + 1]
+                    reg_.resize(std::min(bind.out_, reg_.size()));
 
                     // TODO:un finish
                     matched.for_each([&](Id id)
@@ -109,11 +110,157 @@ struct Machine
 };
 
 template<class L>
+struct Program;
+
+template<class L>
+struct Todo
+{
+    Reg reg_;
+    bool is_ground_;
+    size_t loc_;
+    ENodeOrVar<L> pattern_;
+};
+
+// TODO:last is hash builder
+using VarToReg = IndexMap<Var, Reg, int>;
+// TODO:binary heap
+template<class T>
+using TodoList = std::vector<Todo<T>>;
+
+template<class L>
+struct Compiler
+{
+    Compiler(const PatternAst<L>& pattern, VarToReg v2r = {}, TodoList<L> todo = {}, Reg out = 0)
+        : pattern_(pattern), v2r_(v2r), todo_(todo)
+    {
+
+    }
+
+    std::vector<RecExpr<L>> get_ground_terms()
+    {
+        // get ground terms
+        std::vector<bool> is_ground(pattern_.size());
+        for (size_t i = 0; i < pattern_.size(); ++i)
+        {
+            if(pattern_[i].is_enode_)
+            {
+                auto &node = pattern_[i];
+                is_ground[i] = node.all([&](Id c){ return is_ground[c];});
+            }
+        }
+        auto ground_locs = get_ground_locs(is_ground);
+
+        std::vector<RecExpr<L>> ground_terms;
+        // TODO:some difference
+        for(auto &&[i, _r] : ground_locs)
+        {
+            ground_terms.push_back(build_ground_terms(i));
+        }
+        append_todo(is_ground);
+        return ground_terms;
+    }
+
+    void append_todo(std::vector<bool> &is_ground)
+    {
+        auto pattern_last_index = pattern_.size() - 1;
+        todo_.emplace_back(out_, is_ground[pattern_last_index], pattern_last_index, pattern_[pattern_last_index]);
+        out_ += 1;
+    }
+
+    std::vector<Instruction<L>> get_instructions()
+    {
+        std::vector<Instruction<L>> instructions;
+        while(auto pattern = todo_.pop())
+        {
+//            if(pattern.is_enode_)
+//            {
+//                auto v = pattern.var;
+//                if(auto j = v2r_.get(v))
+//                {
+//                    instructions.push_back();
+//                }
+//                else
+//                {
+//                    v2r_.insert();
+//                }
+//            }
+//            else
+//            {
+//                if()
+//                {
+//                    instructions.push_back();
+//                    continue;
+//                }
+//                auto out_ = out_;
+//                out_ += node.size();
+//            }
+        }
+    }
+
+    SubSet get_subset()
+    {
+        SubSet subst;
+        for(auto s : v2r_)
+        {
+            // TODO:some diff
+            subst.insert(s.k, s.v);
+        }
+        return subst;
+    }
+
+    Program<L> compile()
+    {
+        auto ground_terms = get_ground_terms();
+        auto instructions = get_instructions();
+        auto subst = get_subset();
+        return Program<L>(instructions, subst, ground_terms);
+    }
+
+    RecExpr<L> build_ground_terms(size_t loc)
+    {
+        RecExpr<L> expr;
+        return _build_ground_terms(loc, expr);
+    }
+
+    RecExpr<L> _build_ground_terms(size_t loc, RecExpr<L> &expr)
+    {
+        if(auto node = pattern_[loc]; node.is_enode_)
+        {
+            node.update_children([&](Id c){
+                _build_ground_terms(c, expr);
+                // TODO:has difference
+                return (expr.size() - 1);
+            });
+            expr.push_back(node);
+        }
+        else
+        {
+            throw std::runtime_error("could only build ground terms");
+        }
+    }
+
+    std::vector<Reg> get_ground_locs(const std::vector<bool> &is_gound)
+    {
+
+    }
+    PatternAst<L> pattern_;
+    VarToReg v2r_;
+    TodoList<L> todo_;
+    Reg out_;
+};
+
+template<class L>
 struct Program
 {
     std::vector<Instruction<L>> instructions;
     std::vector<RecExpr<L>> ground_terms;
     SubSet subset;
+
+    Program(const PatternAst<L> &pattern)
+    {
+        // TODO:error
+        Compiler<L>(pattern).compile();
+    }
 
     std::vector<SubSet> run(EGraph<L, Analysis<L>> &egraph, Id eclass)
     {
@@ -134,7 +281,7 @@ struct Program
         std::vector<SubSet> subsets;
         machine.run(egraph, instructions, subset, [&](Machine &machine, SubSet &subst)
         {
-            auto subset_vec = subst.vec;
+            auto subset_vec = subst.vec_;
             for (auto &&v : subset_vec)
             {
                 auto var = v.first;

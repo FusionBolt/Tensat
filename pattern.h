@@ -7,33 +7,29 @@
 
 #include "types.h"
 #include "egraph.h"
-#include "machine.h"
 #include "language.h"
+#include "machine.h"
 #include "rewrite.h"
-
-template<class L>
-struct ENodeOrVar
-{
-    L enode;
-    Var var;
-    bool is_enode_ = true;
-    bool is_enode() { return is_enode_; }
-};
-
-template<class L>
-using PatternAst = RecExpr<ENodeOrVar<L>>;
-
 
 // TODO:不适合继承
 // 这里模板类型接口可能有问题
 template<class L, class N>
-struct Pattern : Searcher<L, Analysis<L>>
+struct Pattern : public Searcher<L, Analysis<L>>, public Applier<L, Analysis<L>>
 {
-    PatternAst<L> ast;
-    Program<L> program;
+    //TODO:this constructor error
+    Pattern()
+    {
+
+    }
+    Pattern(const PatternAst<L>& ast) : ast_(ast)
+    {
+
+    }
+    PatternAst<L> ast_;
+    Program<L> program_;
     std::vector<SearchMatches> search(EGraph<L, N> &egraph) override
     {
-        auto &nodes = ast.nodes;
+        auto &nodes = ast_.nodes;
         // TODO:为什么这里是last
         auto e = nodes[nodes.size() - 1];
         // TODO:node与var的区别
@@ -62,13 +58,15 @@ struct Pattern : Searcher<L, Analysis<L>>
         else
         {
             // TODO:这里能否正确调用子类的search_eclass
-            Searcher<L, Analysis<L>>::search(egraph);
+            return Searcher<L, Analysis<L>>::search(egraph);
         }
+        // will not reach
+        assert(false);
     }
 
-    std::pair<bool, SearchMatches> search_eclass(EGraph<L, N> &egraph, Id eclass)
+    std::pair<bool, SearchMatches> search_eclass(EGraph<L, N> &egraph, Id eclass) override
     {
-        auto subsets = program.run(egraph, eclass);
+        auto subsets = program_.run(egraph, eclass);
         // TODO:refactor
         if(subsets.empty())
         {
@@ -80,9 +78,32 @@ struct Pattern : Searcher<L, Analysis<L>>
         }
     }
 
-    std::vector<Var> vars()
+    std::vector<Var> vars() override
+    {
+        std::vector<Var> result;
+        for(auto n : ast_.nodes)
+        {
+            if (!n.is_enode_)
+            {
+                auto var = n.var;
+                if(std::find(result.begin(), result.end(), var) != result.end())
+                {
+                    result.push_back(var);
+                }
+            }
+        }
+        return result;
+    }
+
+    void from_str()
     {
 
+    }
+
+    void from(const PatternAst<L>& ast)
+    {
+        ast_ = ast;
+        program_ = Program(ast);
     }
 };
 

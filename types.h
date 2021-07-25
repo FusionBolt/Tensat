@@ -7,15 +7,28 @@
 
 using Id = size_t;
 
-struct Var
-{
-
-};
+using Var = std::string;
 
 struct SubSet
 {
     // TODO:small vector
-    std::vector<std::pair<Var, Id>> vec;
+    std::vector<std::pair<Var, Id>> vec_;
+
+    std::optional<Id> insert(const Var &var, Id id)
+    {
+        // TODO:refactor
+        for(auto &&[p_var, p_id] : vec_)
+        {
+            if(p_var == var)
+            {
+                auto tmp_id = p_id;
+                p_id = id;
+                return tmp_id;
+            }
+        }
+        vec_.emplace_back(var, id);
+        return std::nullopt;
+    }
 };
 
 class SearchMatches
@@ -29,6 +42,16 @@ template<class L>
 struct RecExpr
 {
     std::vector<L> nodes;
+
+    size_t size()
+    {
+        return nodes.size();
+    }
+
+    void push_back(const L& l)
+    {
+        nodes.push_back(l);
+    }
 };
 
 using Reg = uint32_t;
@@ -52,9 +75,21 @@ struct Instruction
     Compare compare;
     // TODO:replace enum with variant
 //    enum Instruction<L> {
-//        Bind { node: L, i: Reg, out: Reg },
+//        Bind { node: L, i: Reg, out_: Reg },
 //        Compare { i: Reg, j: Reg },
 //    }
 };
+
+template<class L>
+struct ENodeOrVar
+{
+    L enode;
+    Var var;
+    bool is_enode_ = true;
+    bool is_enode() { return is_enode_; }
+};
+
+template<class L>
+using PatternAst = RecExpr<ENodeOrVar<L>>;
 
 #endif //TENSAT_TYPES_H

@@ -12,4 +12,6 @@ add_executable(Tensat
         main.cpp
         pattern.h
         rewrite.h
-        types.h)
+        runner.h
+        types.h
+        util.h)

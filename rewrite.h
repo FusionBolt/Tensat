@@ -5,13 +5,14 @@
 #ifndef TENSAT_REWRITE_H
 #define TENSAT_REWRITE_H
 
+#include <utility>
 #include "types.h"
 
 template<class L, class N>
 class Applier
 {
 public:
-    std::vector<Id> apply_matches(EGraph<L, N> &egraph, const std::vector<SearchMatches> &matches)
+    virtual std::vector<Id> apply_matches(EGraph<L, N> &egraph, const std::vector<SearchMatches> &matches)
     {
         std::vector<Id> added;
         for (auto &&match : matches)
@@ -69,23 +70,40 @@ public:
     // TODO:error
     Rewrite()
     {
-        applier = new Pattern<L, N>();
+        applier_ = new Pattern<L, N>();
+    }
+
+    Rewrite(std::string name, Searcher<L, N> *searcher, Applier<L, N> *applier)
+    : name_(std::move(name)), searcher_(searcher), applier_(applier)
+    {
+        auto bound_vars = searcher->vars();
+        for(auto &&v : applier->vars())
+        {
+            if(bound_vars.find(v) == bound_vars.end())
+            {
+                throw std::runtime_error("Rewrite" + name + "refers to unbound var" + v);
+            }
+        }
     }
 
     size_t apply(EGraph<L, N> &egraph, const std::vector<SearchMatches> &matches)
     {
-        return applier->apply_matches(egraph, matches).size();
+        return applier_->apply_matches(egraph, matches).size();
     }
 
     std::vector<SearchMatches> search(EGraph<L, N> &egraph)
     {
-        return searcher->search(egraph);
+        return searcher_->search(egraph);
     }
 
-    Applier<L, N> *applier;
+    std::string name()
+    {
+        return name_;
+    }
+    Applier<L, N> *applier_;
     // TODO:replace SearcherArc by Searcher&
-    Searcher<L, N> *searcher;
-    std::string name;
+    Searcher<L, N> *searcher_;
+    std::string name_;
 };
 
 // interface
