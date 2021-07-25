@@ -75,7 +75,7 @@ struct Instruction
     Compare compare;
     // TODO:replace enum with variant
 //    enum Instruction<L> {
-//        Bind { node: L, i: Reg, out_: Reg },
+//        Bind { node: L, i: Reg, out: Reg },
 //        Compare { i: Reg, j: Reg },
 //    }
 };

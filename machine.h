@@ -5,6 +5,7 @@
 #ifndef TENSAT_MACHINE_H
 #define TENSAT_MACHINE_H
 
+#include <algorithm>
 #include "types.h"
 #include "language.h"
 #include "index_map.h"
@@ -26,13 +27,13 @@ struct Machine
                 // TODO:rust while return??
                 return for_each_matching_node(egraph[reg(bind.i)], bind.node, [&](L &matched)
                 {
-                    // let instructions = instructions.as_slice
+                    // let instructions_ = instructions_.as_slice
                     // [1, 2, 3] -> [2, 3] -> [2, 3] -> []
                     // TODO:maybe error 原本是迭代器，现在改成count，由于是递归，肯定会出问题
-                    decltype(instructions) remaining_instructions(instructions.begin(), instructions.end() - count);
+                    std::vector<Instruction<L>> remaining_instructions(instructions.begin(), instructions.end() - count);
                     // TODO:maybe error
-                    // reg_ [0:out_.0 + 1]
-                    reg_.resize(std::min(bind.out_, reg_.size()));
+                    // reg_ [0:out.0 + 1]
+                    reg_.resize(std::min(static_cast<size_t>(bind.out), reg_.size()));
 
                     // TODO:un finish
                     matched.for_each([&](Id id)
@@ -92,9 +93,9 @@ struct Machine
             // decltype(nodes) matching;
             for(auto n = nodes.begin() + start; n != nodes.end(); ++n)
             {
-                if(node.matches(n))
+                if(node.matches(*n))
                 {
-                    f(n);
+                    f(*n);
                     // matching.push_back(n);
                 }
             }
@@ -177,7 +178,7 @@ struct Compiler
 //                auto v = pattern.var;
 //                if(auto j = v2r_.get(v))
 //                {
-//                    instructions.push_back();
+//                    instructions_.push_back();
 //                }
 //                else
 //                {
@@ -188,11 +189,11 @@ struct Compiler
 //            {
 //                if()
 //                {
-//                    instructions.push_back();
+//                    instructions_.push_back();
 //                    continue;
 //                }
-//                auto out_ = out_;
-//                out_ += node.size();
+//                auto out = out;
+//                out += node.size();
 //            }
         }
     }
@@ -200,11 +201,12 @@ struct Compiler
     SubSet get_subset()
     {
         SubSet subst;
-        for(auto s : v2r_)
-        {
-            // TODO:some diff
-            subst.insert(s.k, s.v);
-        }
+        // TODO:impl subst range for
+//        for(auto s : v2r_)
+//        {
+//            // TODO:some diff
+//            subst.insert(s.k, s.v);
+//        }
         return subst;
     }
 
@@ -252,21 +254,26 @@ struct Compiler
 template<class L>
 struct Program
 {
-    std::vector<Instruction<L>> instructions;
-    std::vector<RecExpr<L>> ground_terms;
-    SubSet subset;
+    std::vector<Instruction<L>> instructions_;
+    std::vector<RecExpr<L>> ground_terms_;
+    SubSet subset_;
 
-    Program(const PatternAst<L> &pattern)
+    //TODO:remove this when impl create/parse rule
+    Program() = default;
+
+    Program(const std::vector<Instruction<L>> &instruction,
+            const std::vector<RecExpr<L>>& ground_term,
+            SubSet subset)
+            : instructions_(instruction), ground_terms_(ground_term), subset_(subset)
     {
-        // TODO:error
-        Compiler<L>(pattern).compile();
     }
 
-    std::vector<SubSet> run(EGraph<L, Analysis<L>> &egraph, Id eclass)
+    template<class N>
+    std::vector<SubSet> run(EGraph<L, N> &egraph, Id eclass)
     {
         Machine machine;
         assert(machine.reg_.empty());
-        for (auto &&expr : ground_terms)
+        for (auto &&expr : ground_terms_)
         {
             if (auto[ok, id] = egraph.lookup_expr(expr); ok)
             {
@@ -279,7 +286,7 @@ struct Program
         }
         machine.reg_.push_back(eclass);
         std::vector<SubSet> subsets;
-        machine.run(egraph, instructions, subset, [&](Machine &machine, SubSet &subst)
+        machine.run(egraph, instructions_, subset_, [&](Machine &machine, SubSet &subst)
         {
             auto subset_vec = subst.vec_;
             for (auto &&v : subset_vec)

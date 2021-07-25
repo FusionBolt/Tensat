@@ -9,7 +9,13 @@
 #include "types.h"
 
 template<class L, class N>
-class Applier
+struct Base
+{
+    virtual std::vector<Var> vars() = 0;
+};
+
+template<class L, class N>
+class Applier : public Base<L, N>
 {
 public:
     virtual std::vector<Id> apply_matches(EGraph<L, N> &egraph, const std::vector<SearchMatches> &matches)
@@ -37,7 +43,7 @@ public:
 };
 
 template<class L, class N>
-class Searcher
+class Searcher : public Base<L, N>
 {
 public:
     virtual std::vector<SearchMatches> search(EGraph<L, N> &egraph)
@@ -56,30 +62,19 @@ public:
     }
 
     virtual std::pair<bool, SearchMatches> search_eclass(EGraph<L, N> &egraph, Id eclass) = 0;
-
-    virtual std::vector<Var> vars() = 0;
 };
-
-template<class L, class N>
-class Pattern;
 
 template<class L, class N>
 class Rewrite
 {
 public:
-    // TODO:error
-    Rewrite()
-    {
-        applier_ = new Pattern<L, N>();
-    }
-
     Rewrite(std::string name, Searcher<L, N> *searcher, Applier<L, N> *applier)
     : name_(std::move(name)), searcher_(searcher), applier_(applier)
     {
         auto bound_vars = searcher->vars();
         for(auto &&v : applier->vars())
         {
-            if(bound_vars.find(v) == bound_vars.end())
+            if(std::find(bound_vars.begin(), bound_vars.end(), v) == bound_vars.end())
             {
                 throw std::runtime_error("Rewrite" + name + "refers to unbound var" + v);
             }

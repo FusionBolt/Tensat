@@ -13,8 +13,12 @@ struct EClass
 {
     Id id;
     std::vector<std::pair<L, Id>> parents;
-    std::vector<L> nodes;
+    std::vector<L> nodes_;
     D data;
+    std::vector<L>& nodes()
+    {
+        return nodes_;
+    }
 };
 
 struct UnionFind
@@ -76,10 +80,14 @@ public:
         return classes_.size();
     }
     std::map<Id, EClass<L, typename N::Data>> classes_;
-    std::map<L, std::set<Id>> classes_by_op;
+    std::map<L, std::set<Id>> classes_by_op_;
     UnionFind union_find;
     std::map<L, Id> memo;
 
+    std::map<L, std::set<Id>> &classes_by_op()
+    {
+        return classes_by_op_;
+    }
     Id find(Id id)
     {
         return union_find.find(id);
@@ -91,7 +99,7 @@ public:
         enode.update_children([&](auto &id){ return find(id); });
         if(auto id = memo.find(enode);id != memo.end())
         {
-            return {true, find(*id)};
+            return {true, this->find(id->second)};
         }
         else
         {
@@ -107,12 +115,16 @@ public:
         {
             // TODO: should copy and should constraint callable type, should pass id ref
             node.map_children([&](auto &id){ return new_ids[id]; });
-            auto id = lookup(node);
-            new_ids.push_back(id);
+            // auto id = lookup(node);
+            // TODO:optional, should be same?
+            if(auto [ok, id] = lookup(node); ok)
+            {
+                new_ids.push_back(id);
+            }
         }
     }
 
-    EClass<L, typename N::Data> operator[](Id id)
+    EClass<L, typename N::Data>& operator[](Id id)
     {
         auto i = find(id);
         if(classes_.find(id) != classes_.end())

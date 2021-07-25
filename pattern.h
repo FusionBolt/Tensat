@@ -14,7 +14,7 @@
 // TODO:不适合继承
 // 这里模板类型接口可能有问题
 template<class L, class N>
-struct Pattern : public Searcher<L, Analysis<L>>, public Applier<L, Analysis<L>>
+struct Pattern : public Searcher<L, N>, public Applier<L, N>
 {
     //TODO:this constructor error
     Pattern()
@@ -27,6 +27,11 @@ struct Pattern : public Searcher<L, Analysis<L>>, public Applier<L, Analysis<L>>
     }
     PatternAst<L> ast_;
     Program<L> program_;
+    std::vector<Id> apply_one(EGraph<L, N> &egraph, Id eclass, SubSet subset)
+    {
+        return {};
+    }
+
     std::vector<SearchMatches> search(EGraph<L, N> &egraph) override
     {
         auto &nodes = ast_.nodes;
@@ -36,7 +41,7 @@ struct Pattern : public Searcher<L, Analysis<L>>, public Applier<L, Analysis<L>>
         if (e.is_enode())
         {
             auto key = e.enode;
-            if(auto cls = egraph.classes_by_op; cls.find(key) != cls.end())
+            if(auto cls = egraph.classes_by_op(); cls.find(key) != cls.end())
             {
                 auto ids = cls[key];
                 // filter_map
@@ -58,7 +63,7 @@ struct Pattern : public Searcher<L, Analysis<L>>, public Applier<L, Analysis<L>>
         else
         {
             // TODO:这里能否正确调用子类的search_eclass
-            return Searcher<L, Analysis<L>>::search(egraph);
+            return this->Searcher<L, N>::search(egraph);
         }
         // will not reach
         assert(false);
@@ -103,7 +108,7 @@ struct Pattern : public Searcher<L, Analysis<L>>, public Applier<L, Analysis<L>>
     void from(const PatternAst<L>& ast)
     {
         ast_ = ast;
-        program_ = Program(ast);
+        program_ = Compiler<L>(ast).compile();
     }
 };
 
