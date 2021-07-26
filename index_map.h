@@ -37,7 +37,7 @@ public:
         return v;
     }
 
-    void insert(const std::string &str, size_t)
+    void insert(const K &k, const V &v)
     {
         // TODO:
     }
@@ -46,11 +46,17 @@ public:
     {
         return false;
     }
+
+    std::optional<V> operator[](const K& k)
+    {
+        // TODO:if not exist, return std::nullopt
+        return v;
+    }
     V v;
 };
-IndexMap<int, int, int> DefaultIndexMap()
+IndexMap<std::string, int, int> DefaultIndexMap()
 {
-    return IndexMap<int, int, int>{};
+    return {};
 }
 
 

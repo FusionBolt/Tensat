@@ -52,6 +52,11 @@ struct RecExpr
     {
         nodes.push_back(l);
     }
+
+    L operator[](Id id)
+    {
+        return nodes[static_cast<size_t>(id)];
+    }
 };
 
 using Reg = uint32_t;
@@ -59,7 +64,6 @@ using Reg = uint32_t;
 template<class L>
 struct Instruction
 {
-    bool is_bind = true;
     struct Bind
     {
         L node;
@@ -71,8 +75,12 @@ struct Instruction
         Reg i;
         Reg j;
     };
-    Bind bind;
-    Compare compare;
+    Instruction(Bind bind) : bind_(bind){}
+    Instruction(Compare compare) : compare_(compare){}
+    bool is_bind = true;
+
+    Bind bind_;
+    Compare compare_;
     // TODO:replace enum with variant
 //    enum Instruction<L> {
 //        Bind { node: L, i: Reg, out: Reg },

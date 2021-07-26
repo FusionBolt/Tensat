@@ -9,6 +9,7 @@
 #include "types.h"
 #include "language.h"
 #include "index_map.h"
+#include "util.h"
 
 struct Machine
 {
@@ -23,7 +24,7 @@ struct Machine
         {
             if (instruction.is_bind)
             {
-                auto bind = instruction.bind;
+                auto bind = instruction.bind_;
                 // TODO:rust while return??
                 return for_each_matching_node(egraph[reg(bind.i)], bind.node, [&](L &matched)
                 {
@@ -44,7 +45,7 @@ struct Machine
             else
             {
                 // TODO:reg_
-                auto compare = instruction.compare;
+                auto compare = instruction.compare_;
                 if (egraph.find(reg(compare.i)) != egraph.find(reg(compare.j)))
                 {
                     return;
@@ -125,8 +126,24 @@ struct Todo
 // TODO:last is hash builder
 using VarToReg = IndexMap<Var, Reg, int>;
 // TODO:binary heap
+//template<class T>
+//using TodoList = std::vector<Todo<T>>;
 template<class T>
-using TodoList = std::vector<Todo<T>>;
+struct TodoList
+{
+    std::optional<T> pop()
+    {
+        if(list_.empty())
+        {
+            return std::nullopt;
+        }
+        else
+        {
+            return list_[list_.size() - 1];
+        }
+    }
+    std::vector<Todo<T>> list_;
+};
 
 template<class L>
 struct Compiler
@@ -137,7 +154,7 @@ struct Compiler
 
     }
 
-    std::vector<RecExpr<L>> get_ground_terms()
+    std::pair<std::vector<RecExpr<L>>, std::vector<Reg>> get_ground_terms()
     {
         // get ground terms
         std::vector<bool> is_ground(pattern_.size());
@@ -158,7 +175,7 @@ struct Compiler
             ground_terms.push_back(build_ground_terms(i));
         }
         append_todo(is_ground);
-        return ground_terms;
+        return {ground_terms, ground_locs};
     }
 
     void append_todo(std::vector<bool> &is_ground)
@@ -168,33 +185,47 @@ struct Compiler
         out_ += 1;
     }
 
-    std::vector<Instruction<L>> get_instructions()
+    std::vector<Instruction<L>> get_instructions(const std::vector<Reg> &ground_locs)
     {
         std::vector<Instruction<L>> instructions;
-        while(auto pattern = todo_.pop())
+        while(auto todo = todo_.pop())
         {
-//            if(pattern.is_enode_)
-//            {
-//                auto v = pattern.var;
-//                if(auto j = v2r_.get(v))
-//                {
-//                    instructions_.push_back();
-//                }
-//                else
-//                {
-//                    v2r_.insert();
-//                }
-//            }
-//            else
-//            {
-//                if()
-//                {
-//                    instructions_.push_back();
-//                    continue;
-//                }
-//                auto out = out;
-//                out += node.size();
-//            }
+            // pattern is ENodeOrVar
+            auto i = todo.reg_;
+            auto pattern = todo.pattern_;
+            auto loc = todo.loc_;
+            if(pattern.is_enode_)
+            {
+                auto v = pattern.var;
+                if(auto j = v2r_[v])
+                {
+                    instructions.emplace_back(typename Instruction<L>::Compare {i, j});
+                }
+                else
+                {
+                    v2r_.insert(v, i);
+                }
+            }
+            else
+            {
+                auto node = pattern.enode;
+                if(auto j = craft::find(ground_locs, loc))
+                {
+                    instructions.emplace_back(typename Instruction<L>::Compare {i, j});
+                    continue;
+                }
+                auto out = out_;
+                out_ += node.size();
+                size_t id = 0;
+                craft::for_each([&](Id child){
+                    auto r = Reg(out + id);
+                    // TODO:must add
+                    // todo_.emplace_back(r, is_ground[child],child, pattern_[child]);
+                    id += 1;
+                });
+                node.map_children([](auto v){return 0;});
+                instructions.emplace_back(typename Instruction<L>::Bind {i, node, out});
+            }
         }
     }
 
@@ -210,10 +241,10 @@ struct Compiler
         return subst;
     }
 
-    Program<L> compile()
+    Program<L>compile()
     {
-        auto ground_terms = get_ground_terms();
-        auto instructions = get_instructions();
+        auto &&[ground_terms, ground_locs] = get_ground_terms();
+        auto instructions = get_instructions(ground_locs);
         auto subst = get_subset();
         return Program<L>(instructions, subst, ground_terms);
     }

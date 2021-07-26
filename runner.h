@@ -106,7 +106,7 @@ public:
         return matches;
     }
 
-    IndexMap<int, int, int> apply_rewrite(EGraph<L, N> &egraph, std::vector<Rewrite<L, N>> &rules,
+    auto apply_rewrite(EGraph<L, N> &egraph, std::vector<Rewrite<L, N>> &rules,
                                           std::vector<std::vector<SearchMatches>> &matches)
     {
         auto applied = DefaultIndexMap();

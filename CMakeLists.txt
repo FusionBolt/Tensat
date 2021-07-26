@@ -14,4 +14,4 @@ add_executable(Tensat
         rewrite.h
         runner.h
         types.h
-        util.h)
+        util.h unionfind.h)
