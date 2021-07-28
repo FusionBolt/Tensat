@@ -7,34 +7,9 @@
 
 #include <set>
 #include "types.h"
-
-template<class L, class D>
-struct EClass
-{
-    Id id;
-    std::vector<std::pair<L, Id>> parents;
-    std::vector<L> nodes_;
-    D data;
-    std::vector<L>& nodes()
-    {
-        return nodes_;
-    }
-};
-
-struct UnionFind
-{
-    Id find(Id id)
-    {
-        // TODO:finish
-        return 1;
-    }
-
-    Id find_mut(Id id)
-    {
-        // TODO:finish
-        return 1;
-    }
-};
+#include "unionfind.h"
+#include "eclass.h"
+#include "util.h"
 
 // language, analysis
 template<class L, class N>
@@ -49,8 +24,8 @@ public:
         {
             return {i1, false};
         }
-        auto class1_parents = classes_[i1].parents.size();
-        auto class2_parents = classes_[i2].parents.size();
+        auto class1_parents = classes_[i1].parents().size();
+        auto class2_parents = classes_[i2].parents().size();
         if(class1_parents < class2_parents)
         {
             // TODO:may be has problem
@@ -62,7 +37,7 @@ public:
 
     Id find_mut(Id id)
     {
-        return union_find.find_mut(id);
+        return union_find.find(id);
     }
     void rebuild()
     {
@@ -94,34 +69,33 @@ public:
     }
     // TODO:what is this
     // TODO:may be has some error?
-    std::pair<bool, Id> lookup(L& enode)
+    std::optional<Id> lookup(L& enode)
     {
         enode.update_children([&](auto &id){ return find(id); });
         if(auto id = memo.find(enode);id != memo.end())
         {
-            return {true, this->find(id->second)};
+            return this->find(id->second);
         }
         else
         {
-            return {false, {}};
+            return std::nullopt;
         }
     }
 
-    std::pair<bool, Id> lookup_expr(RecExpr<L> &expr)
+    std::optional<Id> lookup_expr(RecExpr<L> &expr)
     {
         auto nodes = expr.nodes;
         std::vector<Id> new_ids(nodes.size());
         for(auto &&node : nodes)
         {
-            // TODO: should copy and should constraint callable type, should pass id ref
+            // TODO: should copy and should constraint callable type, should pass id_ ref
             node.map_children([&](auto &id){ return new_ids[id]; });
-            // auto id = lookup(node);
-            // TODO:optional, should be same?
-            if(auto [ok, id] = lookup(node); ok)
+            if(auto id = lookup(node))
             {
-                new_ids.push_back(id);
+                new_ids.push_back(id.value());
             }
         }
+        return craft::last(new_ids);
     }
 
     EClass<L, typename N::Data>& operator[](Id id)
@@ -133,8 +107,35 @@ public:
         }
         else
         {
-            throw std::runtime_error("Invalid id" + std::to_string(id));
+            throw std::runtime_error("Invalid id_" + std::to_string(id));
         }
+    }
+
+    Id add_expr(RecExpr<L> &expr)
+    {
+        std::vector<Id> new_ids(expr.size());
+        for(auto &&node : expr)
+        {
+            // TODO:what is this?
+            auto n = node.map_children([&](Id i){
+                return new_ids[i];
+            });
+            new_ids.push_back(add(n));
+        }
+        // TODO:impl a last
+        // unwrap
+        return new_ids[new_ids.size() - 1];
+    }
+
+    Id add(L &enode)
+    {
+        // TODO:not sure
+        if(auto id = lookup(enode))
+        {
+            return id;
+        }
+        auto id = union_find.make_set();
+        EClass<L, typename N::Data> new_class(id, enode.nodes(), N::make(*this, enode), {});
     }
 };
 

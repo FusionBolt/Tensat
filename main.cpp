@@ -64,6 +64,7 @@ std::vector<Rewrite<Lg, LgAna<Lg>>> rules()
     rules.emplace_back("rule A", searcher, applier);
 }
 
+// TODO:replace if_def with pragma
 int main()
 {
     Runner<int, Analysis<int>> runner;

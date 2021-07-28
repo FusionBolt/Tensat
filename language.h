@@ -27,6 +27,7 @@ struct Language
     Language &map_children(Callable &&f)
     {
         update_children(std::forward<Callable &&>(f));
+        return *this;
     }
 
     bool all(std::function<bool(Id)> f)
@@ -48,13 +49,24 @@ struct Language
     virtual bool operator<(const Language &other) const = 0;
 };
 
+// TODO:virtual??
 template<class L>
 struct Analysis
 {
     // TODO:error
     using Data = int;
 
-    static void pre_union(EGraph<L, Analysis<L>> &egraph, Id id1, Id id2)
+    // TODO:concept
+    // N -> analysis N
+    template<class N>
+    static void pre_union(EGraph<L, N> &egraph, Id id1, Id id2)
+    {
+
+    }
+
+    // TODO:concept
+    template<class N>
+    static void make(EGraph<L, N> &egraph, L& node)
     {
 
     }

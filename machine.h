@@ -6,6 +6,7 @@
 #define TENSAT_MACHINE_H
 
 #include <algorithm>
+#include <vector>
 #include "types.h"
 #include "language.h"
 #include "index_map.h"
@@ -306,9 +307,9 @@ struct Program
         assert(machine.reg_.empty());
         for (auto &&expr : ground_terms_)
         {
-            if (auto[ok, id] = egraph.lookup_expr(expr); ok)
+            if (auto id = egraph.lookup_expr(expr))
             {
-                machine.reg_.push_back(id);
+                machine.reg_.push_back(id.value());
             }
             else
             {

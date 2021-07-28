@@ -10,6 +10,7 @@
 // TODO:what's this??
 struct UnionFind
 {
+    // TODO:replace with a optimized union find
     std::vector<Id> parents_;
 
     Id make_set()
@@ -20,7 +21,7 @@ struct UnionFind
         return id;
     }
 
-    Id parent(Id query)
+    Id parent(Id query) const
     {
         // TODO:what??
         return parents_[query];
