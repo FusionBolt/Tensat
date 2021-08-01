@@ -17,9 +17,9 @@ struct SubSet
     std::optional<Id> insert(const Var &var, Id id)
     {
         // TODO:refactor
-        for(auto &&[p_var, p_id] : vec_)
+        for (auto &&[p_var, p_id] : vec_)
         {
-            if(p_var == var)
+            if (p_var == var)
             {
                 auto tmp_id = p_id;
                 p_id = id;
@@ -48,7 +48,7 @@ struct RecExpr
         return nodes.size();
     }
 
-    void push_back(const L& l)
+    void push_back(const L &l)
     {
         nodes.push_back(l);
     }
@@ -75,8 +75,13 @@ struct Instruction
         Reg i;
         Reg j;
     };
-    Instruction(Bind bind) : bind_(bind){}
-    Instruction(Compare compare) : compare_(compare){}
+
+    Instruction(Bind bind) : bind_(bind)
+    {}
+
+    Instruction(Compare compare) : compare_(compare)
+    {}
+
     bool is_bind = true;
 
     Bind bind_;
@@ -91,10 +96,15 @@ struct Instruction
 template<class L>
 struct ENodeOrVar
 {
-    L enode;
-    Var var;
+    L enode_;
+    Var var_;
+    // TODO:some good solution??
     bool is_enode_ = true;
     bool is_enode() { return is_enode_; }
+    L& enode()
+    {
+        return enode_;
+    }
 };
 
 template<class L>

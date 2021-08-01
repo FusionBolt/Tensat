@@ -10,12 +10,12 @@
 
 namespace craft
 {
-    template<template<class L> class Container, class T>
+    template<template<class ...> class Container, class T>
     std::optional<T> find(const Container<T> &container, const T &v)
     {
         if (auto v_p = std::find(container.begin(), container.end(), v); v_p != container.end())
         {
-            return v_p;
+            return *v_p;
         }
         else
         {

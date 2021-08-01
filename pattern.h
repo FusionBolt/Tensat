@@ -23,10 +23,9 @@ struct Pattern : public Searcher<L, N>, public Applier<L, N>
     }
     Pattern(const PatternAst<L>& ast) : ast_(ast)
     {
-
+        from(ast);
     }
-    PatternAst<L> ast_;
-    Program<L> program_;
+
     std::vector<Id> apply_one(EGraph<L, N> &egraph, Id eclass, SubSet subset)
     {
         // TODO:process
@@ -41,7 +40,7 @@ struct Pattern : public Searcher<L, N>, public Applier<L, N>
         // TODO:node与var的区别
         if (e.is_enode())
         {
-            auto key = e.enode;
+            auto key = e.enode_;
             if(auto cls = egraph.classes_by_op(); cls.find(key) != cls.end())
             {
                 auto ids = cls[key];
@@ -91,7 +90,7 @@ struct Pattern : public Searcher<L, N>, public Applier<L, N>
         {
             if (!n.is_enode_)
             {
-                auto var = n.var;
+                auto var = n.var_;
                 if(std::find(result.begin(), result.end(), var) != result.end())
                 {
                     result.push_back(var);
@@ -111,6 +110,8 @@ struct Pattern : public Searcher<L, N>, public Applier<L, N>
         ast_ = ast;
         program_ = Compiler<L>(ast).compile();
     }
+    PatternAst<L> ast_;
+    Program<L> program_;
 };
 
 

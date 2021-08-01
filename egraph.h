@@ -54,10 +54,6 @@ public:
         // TOOD:error
         return classes_.size();
     }
-    std::map<Id, EClass<L, typename N::Data>> classes_;
-    std::map<L, std::set<Id>> classes_by_op_;
-    UnionFind union_find;
-    std::map<L, Id> memo;
 
     std::map<L, std::set<Id>> &classes_by_op()
     {
@@ -136,7 +132,25 @@ public:
         }
         auto id = union_find.make_set();
         EClass<L, typename N::Data> new_class(id, enode.nodes(), N::make(*this, enode), {});
+
+        // add this enode to the parent lists of its children
+        // alloc id in this
+        enode.for_each([&](Id child) {
+            *this[child].parents().emplace_back({enode, id});
+        });
+
+        // TODO:don't know what is this, in egg has comment: "is this needed?"
+        pending.emplace_back({enode, id});
+        classes_.insert(id, new_class);
+        N::modify(*this, id);
+        return id;
     }
+
+    std::map<Id, EClass<L, typename N::Data>> classes_;
+    std::map<L, std::set<Id>> classes_by_op_;
+    UnionFind union_find;
+    std::map<L, Id> memo;
+    std::vector<std::pair<L, Id>> pending;
 };
 
 #endif //TENSAT_EGRAPH_H

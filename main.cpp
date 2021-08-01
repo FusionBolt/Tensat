@@ -16,6 +16,12 @@ struct Lg : public Language
 
     }
 
+    size_t size()
+    {
+        // TODO: call fold
+        return 1;
+    }
+
     bool operator==(const Language &other) const override
     {
         // TODO:error
@@ -52,12 +58,18 @@ struct LgAna
     }
 };
 
+template<class T>
+PatternAst<T> get_rec_expr_list()
+{
+    return {};
+}
+
 std::vector<Rewrite<Lg, LgAna<Lg>>> rules()
 {
     // name
     // lhs -> rhs
-    Searcher<Lg, LgAna<Lg>> *searcher = new Pattern<Lg, LgAna<Lg>>();
-    Applier<Lg, LgAna<Lg>> *applier = new Pattern<Lg, LgAna<Lg>>();
+    Searcher<Lg, LgAna<Lg>> *searcher = new Pattern<Lg, LgAna<Lg>>(get_rec_expr_list<Lg>());
+    Applier<Lg, LgAna<Lg>> *applier = new Pattern<Lg, LgAna<Lg>>(get_rec_expr_list<Lg>());
     std::vector<Rewrite<Lg, LgAna<Lg>>> rules;
     // TODO:if rule has (if cond), should support
     // TODO:if <=> need 2 rewrite(=> only 1)
@@ -67,6 +79,7 @@ std::vector<Rewrite<Lg, LgAna<Lg>>> rules()
 // TODO:replace if_def with pragma
 int main()
 {
+    auto rs = rules();
     Runner<int, Analysis<int>> runner;
     runner.run();
     Extractor<int, Analysis<int>, int> extractor({}, {});
