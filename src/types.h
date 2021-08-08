@@ -48,9 +48,18 @@ struct RecExpr
         return nodes.size();
     }
 
-    void push_back(const L &l)
+    Id push_back(const L &node)
     {
-        nodes.push_back(l);
+        check_node_valid();
+        nodes.push_back(node);
+        return nodes.size() - 1;
+    }
+
+    void check_node_valid(const L &node)
+    {
+        node.all([&](Id id){
+            assert(id < nodes.size());
+        });
     }
 
     L operator[](Id id)
@@ -104,6 +113,16 @@ struct ENodeOrVar
     L& enode()
     {
         return enode_;
+    }
+    void set_enode(const L& enode)
+    {
+        enode_ = enode;
+        is_enode_ = true;
+    }
+    void set_var(const Var& var)
+    {
+        var_ = var;
+        is_enode_ = false;
     }
 };
 

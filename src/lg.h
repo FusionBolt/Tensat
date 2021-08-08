@@ -1,3 +1,4 @@
+#pragma once
 #include "runner.h"
 #include "pattern.h"
 
@@ -57,30 +58,3 @@ struct LgAna
 
     }
 };
-
-template<class T>
-PatternAst<T> get_rec_expr_list()
-{
-    return {};
-}
-
-std::vector<Rewrite<Lg, LgAna<Lg>>> rules()
-{
-    // name
-    // lhs -> rhs
-    Searcher<Lg, LgAna<Lg>> *searcher = new Pattern<Lg, LgAna<Lg>>(get_rec_expr_list<Lg>());
-    Applier<Lg, LgAna<Lg>> *applier = new Pattern<Lg, LgAna<Lg>>(get_rec_expr_list<Lg>());
-    std::vector<Rewrite<Lg, LgAna<Lg>>> rules;
-    // TODO:if rule has (if cond), should support
-    // TODO:if <=> need 2 rewrite(=> only 1)
-    rules.emplace_back("rule A", searcher, applier);
-}
-
-// TODO:replace if_def with pragma
-int main()
-{
-    auto rs = rules();
-    Runner<int, Analysis<int>> runner;
-    runner.run();
-    Extractor<int, Analysis<int>, int> extractor({}, {});
-}

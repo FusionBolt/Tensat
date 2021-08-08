@@ -1,25 +1,33 @@
-//
-// Created by fusionbolt on 2021/7/24.
-//
-
-#ifndef TENSAT_LANGUAGE_H
-#define TENSAT_LANGUAGE_H
+#pragma once
+#include "types.h"
 
 struct Language
 {
+    // require methods
     virtual bool matches(Language &other) = 0;
+    virtual std::vector<Id> children() const = 0;
+    virtual std::vector<Id> &children() = 0;
 
-    /// Runs a given function on each child `Id`.
+    // provided methods
     // TODO:const version
-    virtual void for_each(std::function<void(Id &)> f) = 0;
+    virtual void for_each(std::function<void(Id)> f) const = 0;
+    virtual void for_each(std::function<void(Id&)> f) = 0;
 
+    virtual std::string display_op() const = 0;
+
+    // result<self, string>
+    virtual std::shared_ptr<Language> from_op_str(const std::string &str, const std::vector<Id> &children) = 0;
+
+    virtual size_t size() const = 0;
+
+    virtual bool is_leaf() const = 0;
     /// Runs a given function to replace the children.
     template<class Callable>
     void update_children(Callable &&f)
     {
         // TODO:const version, ref is true?
-        for_each([&](Id &id)
-                 { id = f(id); });
+        for_each([&](Id id)
+                 { id = f(id); return id; });
     }
 
     /// Creates a new enode with children determined by the given function.
@@ -30,6 +38,10 @@ struct Language
         return *this;
     }
 
+
+    /// TODO:fold
+
+    // TODO:to_recexpr
     bool all(std::function<bool(Id)> f)
     {
         // TODO:should test correctness
@@ -71,5 +83,3 @@ struct Analysis
 
     }
 };
-
-#endif //TENSAT_LANGUAGE_H
