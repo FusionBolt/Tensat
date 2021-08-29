@@ -67,7 +67,7 @@ void append_rule(std::vector<Rewrite<L, N>> &rules, const PatternAst<L> &l, Patt
 std::vector<Rewrite<Ops, OpsAnalysis<Ops>>> rules()
 {
     std::vector<Rewrite<Ops, OpsAnalysis<Ops>>> rule_set;
-    append_rule(rule_set, RecExpr<L>);
+    // append_rule(rule_set, RecExpr<Ops>());
 }
 
 int main()

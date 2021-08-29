@@ -1,11 +1,7 @@
-//
-// Created by fusionbolt on 2021/7/25.
-//
-
-#ifndef TENSAT_UNIONFIND_H
-#define TENSAT_UNIONFIND_H
+#pragma once
 
 #include <vector>
+#include <cassert>
 #include "types.h"
 // TODO:what's this??
 struct UnionFind
@@ -61,4 +57,4 @@ struct UnionFind
         return root1;
     }
 };
-#endif //TENSAT_UNIONFIND_H
+

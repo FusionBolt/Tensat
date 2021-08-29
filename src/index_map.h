@@ -1,9 +1,6 @@
-//
-// Created by fusionbolt on 2021/7/17.
-//
+#pragma once
 
-#ifndef TENSAT_INDEX_MAP_H
-#define TENSAT_INDEX_MAP_H
+
 
 template<class T>
 class RawTable
@@ -60,4 +57,4 @@ IndexMap<std::string, int, int> DefaultIndexMap()
 }
 
 
-#endif //TENSAT_INDEX_MAP_H
+

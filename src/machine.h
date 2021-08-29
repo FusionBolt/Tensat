@@ -1,9 +1,6 @@
-//
-// Created by fusionbolt on 2021/7/24.
-//
+#pragma once
 
-#ifndef TENSAT_MACHINE_H
-#define TENSAT_MACHINE_H
+
 
 #include <algorithm>
 #include <vector>
@@ -362,4 +359,4 @@ struct Program
     }
 };
 
-#endif //TENSAT_MACHINE_H
+

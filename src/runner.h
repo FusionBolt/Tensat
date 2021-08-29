@@ -1,9 +1,6 @@
-//
-// Created by fusionbolt on 2021/7/25.
-//
+#pragma once
 
-#ifndef TENSAT_RUNNER_H
-#define TENSAT_RUNNER_H
+
 #include <iostream>
 #include <vector>
 #include <map>
@@ -148,4 +145,4 @@ public:
     std::vector<Iterator<IterData>> iterations;
 };
 // TODO:抽象出一个run_with_check_limit
-#endif //TENSAT_RUNNER_H
+

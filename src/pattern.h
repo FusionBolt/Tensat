@@ -1,9 +1,6 @@
-//
-// Created by fusionbolt on 2021/7/17.
-//
+#pragma once
 
-#ifndef TENSAT_PATTERN_H
-#define TENSAT_PATTERN_H
+
 
 #include "types.h"
 #include "egraph.h"
@@ -115,4 +112,4 @@ struct Pattern : public Searcher<L, N>, public Applier<L, N>
 };
 
 
-#endif //TENSAT_PATTERN_H
+

@@ -1,9 +1,6 @@
-//
-// Created by fusionbolt on 2021/7/17.
-//
+#pragma once
 
-#ifndef TENSAT_REWRITE_H
-#define TENSAT_REWRITE_H
+
 
 #include <utility>
 #include "types.h"
@@ -123,4 +120,4 @@ public:
     }
 };
 
-#endif //TENSAT_REWRITE_H
+

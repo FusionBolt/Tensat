@@ -1,9 +1,6 @@
-//
-// Created by fusionbolt on 2021/7/17.
-//
+#pragma once
 
-#ifndef TENSAT_EXTRACTOR_H
-#define TENSAT_EXTRACTOR_H
+
 
 #include "egraph.h"
 template<class L, class N, class CostFunction>
@@ -21,4 +18,4 @@ public:
     }
 };
 
-#endif //TENSAT_EXTRACTOR_H
+

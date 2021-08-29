@@ -1,9 +1,4 @@
-//
-// Created by fusionbolt on 2021/7/17.
-//
-
-#ifndef TENSAT_EGRAPH_H
-#define TENSAT_EGRAPH_H
+#pragma once
 
 #include <set>
 #include "types.h"
@@ -153,4 +148,4 @@ public:
     std::vector<std::pair<L, Id>> pending;
 };
 
-#endif //TENSAT_EGRAPH_H
+

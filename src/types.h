@@ -1,9 +1,6 @@
-//
-// Created by fusionbolt on 2021/7/17.
-//
+#pragma once
 
-#ifndef TENSAT_TYPES_H
-#define TENSAT_TYPES_H
+#include <optional>
 
 using Id = size_t;
 
@@ -128,5 +125,3 @@ struct ENodeOrVar
 
 template<class L>
 using PatternAst = RecExpr<ENodeOrVar<L>>;
-
-#endif //TENSAT_TYPES_H

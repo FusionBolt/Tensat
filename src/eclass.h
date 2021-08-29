@@ -1,9 +1,6 @@
-//
-// Created by fusionbolt on 2021/7/26.
-//
+#pragma once
 
-#ifndef TENSAT_ECLASS_H
-#define TENSAT_ECLASS_H
+
 
 #include <vector>
 #include "types.h"
@@ -83,4 +80,4 @@ struct EClass
     }
 };
 
-#endif //TENSAT_ECLASS_H
+

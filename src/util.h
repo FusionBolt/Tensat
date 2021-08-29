@@ -1,9 +1,6 @@
-//
-// Created by fusionbolt on 2021/7/24.
-//
+#pragma once
 
-#ifndef TENSAT_UTIL_H
-#define TENSAT_UTIL_H
+
 
 #include <optional>
 #include <variant>
@@ -94,4 +91,4 @@ Container<R> map(const Container<T> &container, Callable &&f) {}
 //        });
 //    }
 } // namespace craft
-#endif // TENSAT_UTIL_H
+
