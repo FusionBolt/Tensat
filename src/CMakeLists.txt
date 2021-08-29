@@ -15,3 +15,5 @@ add_executable(Tensat
         runner.h
         types.h
         util.h unionfind.h eclass.h)
+
+target_link_libraries(Tensat ${CONAN_LIBS})

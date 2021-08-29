@@ -3,7 +3,10 @@
 #include "pattern.h"
 #include "lg.h"
 #include "language.h"
+#include <tao/pegtl.hpp>
 
+using namespace tao::pegtl;
+struct sign : one< '+', '-' > {};
 struct Conv
 {
     int data;
@@ -33,7 +36,6 @@ struct Ops : public Language
     {
         type_ = type;
         value_ = op;
-        return op;
     }
     ir_type type_;
     std::variant<Conv, Add, Matmul> value_;
