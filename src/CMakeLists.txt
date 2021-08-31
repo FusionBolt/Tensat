@@ -1,8 +1,6 @@
 cmake_minimum_required(VERSION 3.17)
 project(Tensat)
 
-set(CMAKE_CXX_STANDARD 20)
-
 add_executable(Tensat
         egraph.h
         extractor.h
@@ -16,4 +14,4 @@ add_executable(Tensat
         types.h
         util.h unionfind.h eclass.h)
 
-target_link_libraries(Tensat ${CONAN_LIBS})
+target_link_libraries(Tensat ${CONAN_TARGETS})
